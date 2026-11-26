@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\UAM.Core\UAM.Core.csproj" />
+    <ProjectReference Include="..\UAM.Analytics\UAM.Analytics.csproj" />
+    <ProjectReference Include="..\UAM.AdaptiveEngine\UAM.AdaptiveEngine.csproj" />
+    <ProjectReference Include="..\UAM.Data\UAM.Data.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

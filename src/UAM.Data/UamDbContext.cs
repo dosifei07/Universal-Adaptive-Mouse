@@ -15,6 +15,12 @@ public sealed class UamDbContext : DbContext
     public DbSet<TrainingObservationEntity> Observations =>
         Set<TrainingObservationEntity>();
 
+    public DbSet<RecommendationEntity> Recommendations =>
+        Set<RecommendationEntity>();
+
+    public DbSet<ApprovedProfileEntity> ApprovedProfiles =>
+        Set<ApprovedProfileEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         var session = modelBuilder.Entity<TrainingSessionEntity>();
@@ -40,5 +46,25 @@ public sealed class UamDbContext : DbContext
             .WithMany(x => x.Observations)
             .HasForeignKey(x => new { x.SessionId, x.GameId })
             .OnDelete(DeleteBehavior.Cascade);
+
+        var recommendation = modelBuilder.Entity<RecommendationEntity>();
+        recommendation.ToTable("Recommendations");
+        recommendation.HasKey(x => x.Id);
+        recommendation.Property(x => x.Id).HasMaxLength(64);
+        recommendation.Property(x => x.GameId).HasMaxLength(200);
+        recommendation.Property(x => x.Status).HasConversion<int>();
+        recommendation.Property(x => x.Reason).HasMaxLength(1000);
+        recommendation.HasIndex(x => new { x.GameId, x.Status });
+        recommendation.HasIndex(x => x.StoredAtUtc);
+
+        var approvedProfile = modelBuilder.Entity<ApprovedProfileEntity>();
+        approvedProfile.ToTable("ApprovedProfiles");
+        approvedProfile.HasKey(x => x.Id);
+        approvedProfile.Property(x => x.Id).HasMaxLength(64);
+        approvedProfile.Property(x => x.GameId).HasMaxLength(200);
+        approvedProfile.Property(x => x.RecommendationId).HasMaxLength(64);
+        approvedProfile.Property(x => x.ApprovedBy).HasMaxLength(200);
+        approvedProfile.HasIndex(x => x.GameId);
+        approvedProfile.HasIndex(x => x.ApprovedAtUtc);
     }
 }
