@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>UAM.AdaptiveEngine</RootNamespace>
+    <AssemblyName>UAM.AdaptiveEngine</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UAM.Core\UAM.Core.csproj" />
+    <ProjectReference Include="..\UAM.Analytics\UAM.Analytics.csproj" />
+  </ItemGroup>
+
+</Project>

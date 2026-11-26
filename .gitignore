@@ -1,0 +1,28 @@
+# Build output
+bin/
+obj/
+artifacts/
+
+# IDE
+.vs/
+.idea/
+*.user
+*.suo
+*.DotSettings.user
+
+# Test output
+TestResults/
+coverage/
+coverage.*.xml
+
+# Local data and exports
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+uam.db
+
+# OS
+.DS_Store
+Thumbs.db

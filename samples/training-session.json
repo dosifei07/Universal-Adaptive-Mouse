@@ -1,0 +1,26 @@
+[
+  {
+    "sessionId": "session-001",
+    "gameId": "valorant",
+    "scenarioId": "sixshot",
+    "timestampUtc": "2026-11-26T12:00:00Z",
+    "directionDegrees": 0,
+    "speedPixelsPerSecond": 650,
+    "signedErrorRatio": 0.12,
+    "acquisitionTimeMs": 420,
+    "hit": false,
+    "movementKind": 0
+  },
+  {
+    "sessionId": "session-001",
+    "gameId": "valorant",
+    "scenarioId": "sixshot",
+    "timestampUtc": "2026-11-26T12:00:01Z",
+    "directionDegrees": 180,
+    "speedPixelsPerSecond": 500,
+    "signedErrorRatio": -0.08,
+    "acquisitionTimeMs": 390,
+    "hit": true,
+    "movementKind": 0
+  }
+]

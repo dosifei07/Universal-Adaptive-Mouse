@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/UAM.AdaptiveEngine/UAM.AdaptiveEngine.csproj" />
+    <Project Path="src/UAM.Analytics/UAM.Analytics.csproj" />
+    <Project Path="src/UAM.Cli/UAM.Cli.csproj" />
+    <Project Path="src/UAM.Core/UAM.Core.csproj" />
+    <Project Path="src/UAM.Data/UAM.Data.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/UAM.AdaptiveEngine.Tests/UAM.AdaptiveEngine.Tests.csproj" />
+  </Folder>
+</Solution>

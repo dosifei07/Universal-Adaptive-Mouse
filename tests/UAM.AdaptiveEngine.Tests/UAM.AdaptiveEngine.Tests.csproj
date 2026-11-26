@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\UAM.Core\UAM.Core.csproj" />
+    <ProjectReference Include="..\..\src\UAM.Analytics\UAM.Analytics.csproj" />
+    <ProjectReference Include="..\..\src\UAM.AdaptiveEngine\UAM.AdaptiveEngine.csproj" />
+    <ProjectReference Include="..\..\src\UAM.Data\UAM.Data.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\samples\training-session.json"
+          Link="samples\training-session.json"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\samples\training-session-extended.json"
+          Link="samples\training-session-extended.json"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>UAM.Analytics</RootNamespace>
+    <AssemblyName>UAM.Analytics</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UAM.Core\UAM.Core.csproj" />
+  </ItemGroup>
+
+</Project>

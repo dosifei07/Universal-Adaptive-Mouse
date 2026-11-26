@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>UAM.Core</RootNamespace>
+    <AssemblyName>UAM.Core</AssemblyName>
+  </PropertyGroup>
+
+</Project>
