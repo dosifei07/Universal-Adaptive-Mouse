@@ -85,8 +85,68 @@ separate from domain records so database concerns cannot leak into the engine.
 - `TrainingSessions` is keyed by `(SessionId, GameId)` and stores summary fields.
 - `TrainingObservations` stores each accepted observation, indexed by
   `(GameId, TimestampUtc)`.
-- The database is created with `EnsureCreated` for v0.1. Schema migrations are a
-  prerequisite for public distribution.
+- `ImportRecords` stores one row per imported document identity
+  (`Provider`, `SourceSessionId`, `ContentHash`), with `LastImportedAtUtc` and
+  `ImportCount`. Re-imports touch this row and never re-write observations.
+- The schema is created with `EnsureCreated`, then `InitializeAsync` applies
+  additive `CREATE TABLE IF NOT EXISTS` statements so an existing v0.2 `uam.db`
+  opens and gains `ImportRecords`. Formal migrations are still a prerequisite for
+  public distribution.
+
+## Import pipeline and provider policy (v0.3)
+
+```text
+Provider / UAM Lab / watched folder
+              │
+              ▼
+   TrainingDocument (schemaVersion, provider,
+     captureMethod, sourceSessionId, observations)
+              │
+              ▼
+      TrainingDocumentJson
+      validate major version
+      compute SHA-256 hash
+              │
+              ▼
+        ImportService
+      ProviderRegistry gate ──► ProviderNotPermittedException
+              │
+              ├── duplicate (provider + session or hash)
+              │        └── touch LastImportedAtUtc / ImportCount
+              ▼
+      TrainingStore observations + ImportRecord
+              │
+              ▼
+   Dashboard / History / ProviderHealth
+```
+
+- A canonical document is a JSON object; a bare observation array is still
+  accepted and wrapped as `provider = canonical-json`,
+  `captureMethod = legacy-json`.
+- The schema major version must be `1`; newer majors are rejected with
+  `TrainingDocumentVersionException`.
+- Import identity is provider + source session id + SHA-256 of the exact content.
+  Duplicate detection also matches the hash alone, so white-space-only edits to a
+  file still resolve to one session.
+- The provider registry records maturity (`Available`, `Research`, `Planned`) and
+  a terms position (`Permitted`, `PermissionRequested`, `NotPermitted`).
+  `ImportService` refuses any provider whose terms are not `Permitted` before
+  reading or storing observations.
+- Provider health is derived from real state: `Connected` only when import
+  records exist, `Ready` when working code exists without data, `NotConnected`
+  for research/planned providers, and `Blocked` for `NotPermitted`.
+
+## UAM Lab (v0.3)
+
+- `LabSessionEngine` lives in `UAM.Application` and has no Avalonia or data
+  dependency. The desktop canvas only forwards pointer points and hit flags.
+- Each trial becomes one `TrainingObservation` labelled `gameId = uam-lab`,
+  `captureMethod = 2d-canvas`.
+- `LabSessionService.CompleteAsync` converts the capture, builds the canonical
+  document, and runs it through the same `ImportService` as any other provider.
+  The user never handles JSON.
+- Recorded limitation: this is a 2D pointer task, not first-person camera aiming.
+  It cannot measure game sensitivity, FOV, or engine acceleration.
 
 ## Future extension points
 

@@ -15,6 +15,14 @@ overshoot and undershoot so the recommendation path is exercised.
 This is still synthetic, generated for pipeline testing. It is not evidence that
 the proposed gains improve aim.
 
+## `training-document.json`
+
+A canonical, versioned document (`schemaVersion` `1.0`) with provider,
+capture method, source session id and two synthetic observations. Use it to
+exercise `UAM.Cli import samples/training-document.json` and the import
+identity/idempotency path. Importing it twice reports a duplicate and writes no
+second copy.
+
 Both files use the canonical observation format:
 
 ```json

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "provider": "canonical-json",
+  "captureMethod": "json-import",
+  "sourceSessionId": "sample-canonical-001",
+  "observations": [
+    {
+      "sessionId": "sample-canonical-001",
+      "gameId": "valorant",
+      "scenarioId": "gridshot",
+      "timestampUtc": "2026-11-27T12:00:00Z",
+      "directionDegrees": 0,
+      "speedPixelsPerSecond": 650,
+      "signedErrorRatio": 0.12,
+      "acquisitionTimeMs": 320,
+      "hit": true,
+      "movementKind": "flick"
+    },
+    {
+      "sessionId": "sample-canonical-001",
+      "gameId": "valorant",
+      "scenarioId": "gridshot",
+      "timestampUtc": "2026-11-27T12:00:01Z",
+      "directionDegrees": 90,
+      "speedPixelsPerSecond": 540,
+      "signedErrorRatio": -0.08,
+      "acquisitionTimeMs": 410,
+      "hit": false,
+      "movementKind": "tracking"
+    }
+  ]
+}

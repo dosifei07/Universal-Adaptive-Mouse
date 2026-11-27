@@ -1,17 +1,18 @@
 # Universal Adaptive Mouse (UAM)
 
-**UAM Core v0.1** — a provider-independent engine for learning a player's aiming
-bias and generating conservative, game-specific optimization profiles.
+**UAM v0.3** — a provider-independent engine for learning a player's aiming
+bias and generating conservative, game-specific optimization profiles, with an
+Avalonia desktop app and a versioned, provenance-carrying import pipeline.
 
-This milestone is intentionally a headless foundation. It does **not** intercept
-mouse input, install drivers, or integrate with a game. The mathematics can be
-developed, tested, and validated without any of those dependencies.
+This milestone does **not** intercept mouse input, install drivers, or integrate
+with a game. The mathematics can be developed, tested, and validated without
+those dependencies.
 
 ---
 
 ## Status
 
-Implemented in v0.1:
+Implemented through v0.3:
 
 - Provider-neutral training observation model with JSON serialization.
 - Pre-analysis validation (finite values, plausible timestamps, outlier guards).
@@ -22,16 +23,30 @@ Implemented in v0.1:
 - Local SQLite session storage (EF Core).
 - Profile export to JSON.
 - CLI for the full pipeline: load → analyze → recommend → store → approve → export.
-- 71 automated tests covering the engine, analytics, validation, storage, and
-  serialization.
+- Avalonia desktop app with seven pages: Dashboard, Analysis, Optimization,
+  Profiles, Integrations, History, Settings.
+- Canonical versioned training documents (`schemaVersion` 1.0) carrying provider,
+  capture method, source session id, observations, and optional raw capture.
+- Idempotent import: identity is provider + source session + content hash. A
+  duplicate updates import metadata only and writes no observations.
+- Provider registry with maturity and terms positions. Integrations can only be
+  built for providers whose terms are recorded as `Permitted`.
+- Watched-folder import (`import --folder`) that re-scans safely on each event and
+  never moves or deletes source files.
+- UAM Lab: a first-party 2D pointer capture task whose completed trials are
+  imported automatically and appear in the dashboard and history with no manual
+  JSON handling.
+- 211 automated tests covering the engine, analytics, validation, storage,
+  serialization, import identity, provider gating, the Lab pipeline, and the
+  desktop view models.
 
 Deliberately not included yet:
 
 - Mouse interception or transformation.
 - Virtual HID drivers.
-- Automatic Aimlabs integration.
+- Automatic Aimlabs integration (research only; terms permission requested).
 - Anti-cheat-sensitive game integrations.
-- Desktop UI (scheduled for v0.2).
+- Packaged installers or code signing.
 
 ---
 
@@ -69,7 +84,8 @@ UAM.Data    UAM.Cli → UAM.Data
 A future input layer or desktop UI can consume the same engine without changing
 the mathematics.
 
-More detail: [`docs/architecture.md`](docs/architecture.md).
+More detail: [`docs/architecture.md`](docs/architecture.md) and
+[`docs/release-notes.md`](docs/release-notes.md).
 
 ---
 
@@ -140,6 +156,24 @@ Store and inspect sessions:
 dotnet run --project src/UAM.Cli -- sessions --db uam.db
 ```
 
+### Import canonical documents
+
+`import` accepts a versioned training document (or a legacy bare observation
+array) and records provenance. Re-importing the same document reports
+`Duplicate` and writes nothing:
+
+```bash
+dotnet run --project src/UAM.Cli -- \
+  import samples/training-document.json --db uam.db
+
+# Re-run: outcome is Duplicate, stored count is 0.
+dotnet run --project src/UAM.Cli -- \
+  import samples/training-document.json --db uam.db
+
+# Scan a whole folder (files are left in place):
+dotnet run --project src/UAM.Cli -- import --folder imports --db uam.db
+```
+
 Export requires explicit approval. Without `--approve`, the CLI refuses and
 exits with code `2`:
 
@@ -159,6 +193,8 @@ dotnet run --project src/UAM.Cli -- \
 
 ```text
 UAM.Cli analyze <training-session.json> [options]
+UAM.Cli import <training-document.json> [--db <path>]
+UAM.Cli import --folder <path> [--db <path>]
 UAM.Cli sessions [--db <path>]
 
 Analyze options:
@@ -169,6 +205,10 @@ Analyze options:
   --export <path>   Export the approved profile as JSON
   --approve         Explicitly approve the recommendation for export
   --help            Show help
+
+Import options:
+  --db <path>       SQLite database path (default: uam.db)
+  --folder <path>   Import every *.json document in a folder
 ```
 
 The shorthand `UAM.Cli session.json` remains supported.
@@ -207,16 +247,22 @@ still a research question (see v0.4).
 
 ```text
 src/
-  UAM.Core/            domain models, validation, JSON formats
+  UAM.Core/            domain models, validation, JSON formats, provider registry
   UAM.Analytics/       directional/speed performance analysis
   UAM.AdaptiveEngine/  recommendations, approval boundary
-  UAM.Data/            EF Core + SQLite session storage
+  UAM.Data/            EF Core + SQLite storage, import records
+  UAM.Application/     import, provider health, watched folder, UAM Lab engine
   UAM.Cli/             end-to-end test interface
+  UAM.Desktop/         Avalonia shell and composition root
+  UAM.Desktop.ViewModels/  page view models (no Avalonia, no data layer)
+  UAM.Desktop.Shared/  MVVM primitives, formatting, navigation catalog
 tests/
   UAM.AdaptiveEngine.Tests/   engine, analytics, validation, data, serialization
+  UAM.Desktop.Tests/          view models, workflow, import, Lab
 samples/
   training-session.json          2-row serialization smoke test
   training-session-extended.json 80-row synthetic pipeline fixture
+  training-document.json         canonical versioned import sample
 docs/
   architecture.md
 ```
@@ -231,10 +277,16 @@ docs/
   games; this is acceptable for v0.1 but should become an explicit leave-one-game
   prior design later.
 - Speed bands are global defaults, not calibrated per player.
-- SQLite schema creation uses `EnsureCreated`; migrations will be added before
-  public distribution.
-- Re-importing the same file appends duplicate observations. Import idempotency
-  and source provenance are planned.
+- SQLite schema creation uses `EnsureCreated` plus additive `CREATE TABLE IF NOT
+  EXISTS` upgrades, so an older `uam.db` still opens. Formal migrations are still
+  required before public distribution.
+- Import identity uses the document's provider, source session id, and SHA-256
+  content hash. Editing provenance fields creates a new document identity.
+- UAM Lab measures 2D pointer flicks on a flat canvas. It is **not** first-person
+  camera aiming and cannot model 3D sensitivity, field of view, or game-engine
+  acceleration. Lab results must not be treated as game sensitivity measurements.
+- Aimlabs and other third-party providers remain research/planned. Integration
+  code is not written until their terms are recorded as `Permitted`.
 - Evaluation is offline. There is no controlled experiment yet proving that the
   proposed gains improve aim.
 
@@ -244,9 +296,9 @@ docs/
 
 | Version | Focus |
 | --- | --- |
-| v0.1 | Core models, analytics, recommendations, CLI (current) |
+| v0.1 | Core models, analytics, recommendations, CLI |
 | v0.2 | Avalonia desktop app: dashboard, directional heatmap, profiles, history, approval workflow |
-| v0.3 | Aimlabs telemetry investigation and connector |
+| v0.3 | Canonical versioned imports, provenance, idempotency, watched folder, provider registry and terms gate, UAM Lab capture |
 | v0.4 | Controlled validation of directional and velocity models |
 | v0.5 | Input sandbox independent of games and anti-cheat |
 | v1.0 | Windows release, supported input integration, additional providers |
