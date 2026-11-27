@@ -2,14 +2,73 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="UAM.Desktop.App"
              xmlns:local="using:UAM.Desktop"
-             RequestedThemeVariant="Default">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+             RequestedThemeVariant="Light">
+    <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
     <Application.DataTemplates>
         <local:ViewLocator />
     </Application.DataTemplates>
 
+    <Application.Resources>
+        <local:EstimateBrushConverter x:Key="EstimateBrush" />
+    </Application.Resources>
+
     <Application.Styles>
         <Fluent2Theme />
+
+        <Style Selector="TextBlock.pageTitle">
+            <Setter Property="FontSize" Value="24" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <Style Selector="TextBlock.section">
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,12,0,6" />
+        </Style>
+
+        <Style Selector="TextBlock.muted">
+            <Setter Property="Foreground" Value="#5B6472" />
+        </Style>
+
+        <Style Selector="TextBlock.metric">
+            <Setter Property="FontSize" Value="22" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <Style Selector="TextBlock.error">
+            <Setter Property="Foreground" Value="#B42318" />
+        </Style>
+
+        <Style Selector="Border.card">
+            <Setter Property="Background" Value="#F5F6F8" />
+            <Setter Property="BorderBrush" Value="#E2E5EA" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="16" />
+        </Style>
+
+        <Style Selector="Button.nav">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="12,10" />
+            <Setter Property="Margin" Value="0,1" />
+        </Style>
+
+        <Style Selector="Button.nav.selected">
+            <Setter Property="Background" Value="#E4ECFA" />
+        </Style>
+
+        <Style Selector="TextBlock.navTitle">
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <Style Selector="TextBlock.navDesc">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Foreground" Value="#6B7280" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
     </Application.Styles>
 </Application>

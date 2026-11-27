@@ -1,0 +1,82 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:UAM.Desktop.ViewModels"
+             x:Class="UAM.Desktop.Views.Pages.HistoryView"
+             x:DataType="vm:HistoryViewModel"
+             x:CompileBindings="False">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24" Spacing="12">
+
+            <WrapPanel>
+                <Button Content="Refresh" Command="{Binding RefreshCommand}" Margin="0,0,8,0" />
+                <ComboBox Width="190" PlaceholderText="All games"
+                          ItemsSource="{Binding Games}"
+                          SelectedItem="{Binding SelectedGame, Mode=TwoWay}" Margin="0,0,8,0" />
+                <ComboBox Width="190" PlaceholderText="All scenarios"
+                          ItemsSource="{Binding Scenarios}"
+                          SelectedItem="{Binding SelectedScenario, Mode=TwoWay}" Margin="0,0,8,0" />
+                <Button Content="Clear filters" Command="{Binding ClearFiltersCommand}" />
+            </WrapPanel>
+
+            <WrapPanel>
+                <Border Classes="card" Width="200" Margin="0,0,10,10">
+                    <StackPanel>
+                        <TextBlock Classes="muted" Text="Visible sessions" />
+                        <TextBlock Classes="metric" Text="{Binding SessionCountText}" />
+                    </StackPanel>
+                </Border>
+                <Border Classes="card" Width="200" Margin="0,0,10,10">
+                    <StackPanel>
+                        <TextBlock Classes="muted" Text="Observations" />
+                        <TextBlock Classes="metric" Text="{Binding ObservationTotalText}" />
+                    </StackPanel>
+                </Border>
+            </WrapPanel>
+
+            <Border Classes="card" IsVisible="{Binding IsEmpty}">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="No stored sessions" FontWeight="SemiBold" />
+                    <TextBlock Classes="muted" TextWrapping="Wrap"
+                               IsVisible="{Binding !IsFilteredEmpty}"
+                               Text="Import a training document or complete a UAM Lab session to build history." />
+                    <TextBlock Classes="muted" TextWrapping="Wrap"
+                               IsVisible="{Binding IsFilteredEmpty}"
+                               Text="The selected filters hide every stored session." />
+                </StackPanel>
+            </Border>
+
+            <Border Classes="card" Padding="0">
+                <StackPanel>
+                    <Grid ColumnDefinitions="2*,1.4*,1.4*,1.2*,1*,1.2*" Margin="14,10"
+                          Background="#EFF1F5">
+                        <TextBlock Text="Session" FontWeight="SemiBold" />
+                        <TextBlock Grid.Column="1" Text="Game" FontWeight="SemiBold" />
+                        <TextBlock Grid.Column="2" Text="Scenario" FontWeight="SemiBold" />
+                        <TextBlock Grid.Column="3" Text="Started" FontWeight="SemiBold" />
+                        <TextBlock Grid.Column="4" Text="Duration" FontWeight="SemiBold" />
+                        <TextBlock Grid.Column="5" Text="Observations" FontWeight="SemiBold" />
+                    </Grid>
+
+                    <ItemsControl ItemsSource="{Binding Sessions}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="2*,1.4*,1.4*,1.2*,1*,1.2*" Margin="14,8">
+                                    <TextBlock Text="{Binding SessionId}" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Grid.Column="1" Text="{Binding GameId}" />
+                                    <TextBlock Grid.Column="2" Text="{Binding ScenarioId}" />
+                                    <TextBlock Grid.Column="3" Text="{Binding StartedText}" />
+                                    <TextBlock Grid.Column="4" Text="{Binding DurationText}" />
+                                    <TextBlock Grid.Column="5" Text="{Binding ObservationCountText}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="{Binding ErrorMessage}" Classes="error"
+                       IsVisible="{Binding HasError}" TextWrapping="Wrap" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

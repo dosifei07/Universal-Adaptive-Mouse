@@ -1,0 +1,124 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:UAM.Desktop.ViewModels"
+             x:Class="UAM.Desktop.Views.Pages.OptimizationView"
+             x:DataType="vm:OptimizationViewModel"
+             x:CompileBindings="False">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24" Spacing="12">
+
+            <WrapPanel>
+                <Button Content="Refresh" Command="{Binding RefreshCommand}" Margin="0,0,8,0" />
+                <Button Content="Generate recommendation" Command="{Binding GenerateCommand}"
+                        IsEnabled="{Binding CanGenerate}" Margin="0,0,8,0" />
+                <ComboBox Width="170" PlaceholderText="All statuses"
+                          ItemsSource="{Binding AvailableStatuses}"
+                          SelectedItem="{Binding StatusFilter, Mode=TwoWay}" Margin="0,0,8,0" />
+                <ComboBox Width="180" PlaceholderText="Game"
+                          ItemsSource="{Binding Games}"
+                          SelectedItem="{Binding SelectedGame, Mode=TwoWay}" />
+            </WrapPanel>
+
+            <Border Classes="card" IsVisible="{Binding NeedsTrainingData}">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="No training data yet" FontWeight="SemiBold" />
+                    <TextBlock Classes="muted" TextWrapping="Wrap"
+                               Text="Import a training document or complete a UAM Lab session before generating a recommendation." />
+                </StackPanel>
+            </Border>
+
+            <Grid ColumnDefinitions="330,*" ColumnSpacing="14">
+                <Border Grid.Column="0" Classes="card" Padding="6">
+                    <StackPanel>
+                        <TextBlock Text="Recommendations" FontWeight="SemiBold" Margin="8,6,8,8" />
+                        <ListBox ItemsSource="{Binding Recommendations}"
+                                 SelectedItem="{Binding SelectedRecommendation, Mode=TwoWay}"
+                                 MinHeight="220">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Spacing="2" Margin="2,4">
+                                        <TextBlock Text="{Binding GameId}" FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding StatusText}" FontSize="12" />
+                                        <TextBlock Classes="muted" FontSize="11" Text="{Binding CreatedText}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="1" Classes="card">
+                    <StackPanel Spacing="8" IsVisible="{Binding HasSelection}">
+                        <TextBlock Text="{Binding SelectedRecommendation.GameId}" FontSize="18" FontWeight="SemiBold" />
+                        <Grid ColumnDefinitions="140,*">
+                            <TextBlock Classes="muted" Text="Status" />
+                            <TextBlock Grid.Column="1" Text="{Binding SelectedRecommendation.StatusText}" />
+                            <TextBlock Grid.Row="1" Classes="muted" Text="Confidence" />
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedRecommendation.ConfidenceText}" />
+                            <TextBlock Grid.Row="2" Classes="muted" Text="Created" />
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedRecommendation.CreatedText}" />
+                        </Grid>
+                        <TextBlock Classes="muted" TextWrapping="Wrap"
+                                   Text="{Binding SelectedRecommendation.Reason}" />
+
+                        <TextBlock Classes="section" Text="Proposed directional gains" />
+                        <ItemsControl ItemsSource="{Binding SelectedRecommendation.DirectionalGains}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="160,90,*" Margin="0,2">
+                                        <TextBlock Text="{Binding Label}" />
+                                        <TextBlock Grid.Column="1" Text="{Binding GainText}" />
+                                        <TextBlock Grid.Column="2" Classes="muted" Text="{Binding DeltaText}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <TextBlock Classes="section" Text="Proposed speed gains" />
+                        <ItemsControl ItemsSource="{Binding SelectedRecommendation.SpeedGains}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="160,90,*" Margin="0,2">
+                                        <TextBlock Text="{Binding Label}" />
+                                        <TextBlock Grid.Column="1" Text="{Binding GainText}" />
+                                        <TextBlock Grid.Column="2" Classes="muted" Text="{Binding DeltaText}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <Border Background="#FFF7E6" CornerRadius="8" Padding="10"
+                                IsVisible="{Binding IsConfirmingApproval}">
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="{Binding ApprovalPrompt}" TextWrapping="Wrap" />
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button Content="Confirm approval" Command="{Binding ConfirmApprovalCommand}"
+                                            IsEnabled="{Binding CanConfirmApproval}" />
+                                    <Button Content="Cancel" Command="{Binding CancelApprovalCommand}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button Content="Begin approval" Command="{Binding BeginApprovalCommand}"
+                                    IsEnabled="{Binding CanBeginApproval}" />
+                            <Button Content="Reject" Command="{Binding RejectCommand}"
+                                    IsEnabled="{Binding CanReject}" />
+                            <Button Content="View profiles" Command="{Binding ViewProfilesCommand}" />
+                        </StackPanel>
+
+                        <TextBox Text="{Binding RejectionNote, Mode=TwoWay}"
+                                 PlaceholderText="Optional rejection note" />
+
+                        <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"
+                                   Foreground="#067647" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <TextBlock Text="{Binding ErrorMessage}" Classes="error"
+                       IsVisible="{Binding HasError}" TextWrapping="Wrap" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

@@ -7,7 +7,9 @@ using UAM.Desktop.ViewModels;
 namespace UAM.Desktop;
 
 /// <summary>
-/// Given a view model, returns the corresponding view if possible.
+/// Given a view model, returns the corresponding view if possible. Page view
+/// models live under ViewModels.Pages, so the namespace segment is remapped as
+/// well as the type suffix.
 /// </summary>
 [RequiresUnreferencedCode(
     "Default implementation of ViewLocator involves reflection which may be trimmed away.",
@@ -18,15 +20,18 @@ public class ViewLocator : IDataTemplate
     {
         if (param is null)
             return null;
-        
-        var name = param.GetType().FullName!.Replace("ViewModel", "View", StringComparison.Ordinal);
+
+        var name = param.GetType().FullName!
+            .Replace("ViewModels", "Views", StringComparison.Ordinal)
+            .Replace("ViewModel", "View", StringComparison.Ordinal);
+
         var type = Type.GetType(name);
 
         if (type != null)
         {
             return (Control)Activator.CreateInstance(type)!;
         }
-        
+
         return new TextBlock { Text = "Not Found: " + name };
     }
 

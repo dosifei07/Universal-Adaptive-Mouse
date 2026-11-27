@@ -1,0 +1,158 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:UAM.Desktop.ViewModels"
+             x:Class="UAM.Desktop.Views.Pages.AnalysisView"
+             x:DataType="vm:AnalysisViewModel"
+             x:CompileBindings="False">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24" Spacing="12">
+
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="Refresh" Command="{Binding RefreshCommand}" />
+                <ComboBox Width="220"
+                          PlaceholderText="All games"
+                          ItemsSource="{Binding Games}"
+                          SelectedItem="{Binding SelectedGame, Mode=TwoWay}" />
+                <Button Content="Optimization"
+                        Command="{Binding GenerateRecommendationCommand}"
+                        IsEnabled="{Binding HasData}" />
+            </StackPanel>
+
+            <Border Classes="card" IsVisible="{Binding IsEmpty}">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Nothing to analyze yet" FontWeight="SemiBold" />
+                    <TextBlock Classes="muted" TextWrapping="Wrap"
+                               Text="Import a training document or complete a UAM Lab session first." />
+                </StackPanel>
+            </Border>
+
+            <WrapPanel>
+                <Border Classes="card" Width="180" Margin="0,0,10,10">
+                    <StackPanel>
+                        <TextBlock Classes="muted" Text="Observations" />
+                        <TextBlock Classes="metric" Text="{Binding TotalObservationsText}" />
+                    </StackPanel>
+                </Border>
+                <Border Classes="card" Width="180" Margin="0,0,10,10">
+                    <StackPanel>
+                        <TextBlock Classes="muted" Text="Accepted" />
+                        <TextBlock Classes="metric" Text="{Binding AcceptedText}" />
+                    </StackPanel>
+                </Border>
+                <Border Classes="card" Width="180" Margin="0,0,10,10">
+                    <StackPanel>
+                        <TextBlock Classes="muted" Text="Rejected" />
+                        <TextBlock Classes="metric" Text="{Binding RejectedText}" />
+                    </StackPanel>
+                </Border>
+            </WrapPanel>
+
+            <Border Classes="card" IsVisible="{Binding HasRejections}">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Rejected observations" FontWeight="SemiBold" />
+                    <TextBlock Classes="muted" TextWrapping="Wrap"
+                               Text="Rows that failed validation are reported here and never influence the model." />
+                    <ItemsControl ItemsSource="{Binding RejectionSummaries}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <TextBlock Classes="section" Text="Global directional bias" />
+            <ItemsControl ItemsSource="{Binding GlobalHeatmap}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Width="140" Height="128" Margin="0,0,9,9" CornerRadius="10"
+                                BorderBrush="#D7DBE2" BorderThickness="1" Padding="10"
+                                Background="{Binding Converter={StaticResource EstimateBrush}}"
+                                ToolTip.Tip="{Binding ToolTip}">
+                            <StackPanel Spacing="1">
+                                <TextBlock Text="{Binding Arrow}" FontSize="22" />
+                                <TextBlock Text="{Binding Direction}" FontWeight="SemiBold" FontSize="12" />
+                                <TextBlock Text="{Binding BiasText}" FontSize="12" />
+                                <TextBlock Classes="muted" FontSize="11" Text="{Binding ErrorText}" />
+                                <TextBlock Classes="muted" FontSize="11" Text="{Binding ConfidenceText}" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock Classes="section" Text="Selected game directional bias" />
+            <ItemsControl ItemsSource="{Binding GameHeatmap}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Width="140" Height="128" Margin="0,0,9,9" CornerRadius="10"
+                                BorderBrush="#D7DBE2" BorderThickness="1" Padding="10"
+                                Background="{Binding Converter={StaticResource EstimateBrush}}"
+                                ToolTip.Tip="{Binding ToolTip}">
+                            <StackPanel Spacing="1">
+                                <TextBlock Text="{Binding Arrow}" FontSize="22" />
+                                <TextBlock Text="{Binding Direction}" FontWeight="SemiBold" FontSize="12" />
+                                <TextBlock Text="{Binding BiasText}" FontSize="12" />
+                                <TextBlock Classes="muted" FontSize="11" Text="{Binding ErrorText}" />
+                                <TextBlock Classes="muted" FontSize="11" Text="{Binding ConfidenceText}" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock Classes="section" Text="Global speed bands" />
+            <ItemsControl ItemsSource="{Binding GlobalSpeeds}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Margin="0,0,0,6" CornerRadius="8" Padding="12"
+                                BorderBrush="#D7DBE2" BorderThickness="1"
+                                Background="{Binding Converter={StaticResource EstimateBrush}}">
+                            <Grid ColumnDefinitions="100,110,120,110,*">
+                                <TextBlock Text="{Binding BandText}" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="1" Text="{Binding BiasText}" />
+                                <TextBlock Grid.Column="2" Text="{Binding ErrorText}" />
+                                <TextBlock Grid.Column="3" Text="{Binding ConfidenceText}" />
+                                <TextBlock Grid.Column="4" Classes="muted" Text="{Binding SampleText}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock Classes="section" Text="Selected game speed bands" />
+            <ItemsControl ItemsSource="{Binding GameSpeeds}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Margin="0,0,0,6" CornerRadius="8" Padding="12"
+                                BorderBrush="#D7DBE2" BorderThickness="1"
+                                Background="{Binding Converter={StaticResource EstimateBrush}}">
+                            <Grid ColumnDefinitions="100,110,120,110,*">
+                                <TextBlock Text="{Binding BandText}" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="1" Text="{Binding BiasText}" />
+                                <TextBlock Grid.Column="2" Text="{Binding ErrorText}" />
+                                <TextBlock Grid.Column="3" Text="{Binding ConfidenceText}" />
+                                <TextBlock Grid.Column="4" Classes="muted" Text="{Binding SampleText}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock Text="{Binding ErrorMessage}" Classes="error"
+                       IsVisible="{Binding HasError}" TextWrapping="Wrap" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

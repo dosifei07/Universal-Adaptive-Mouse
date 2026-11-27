@@ -1,0 +1,152 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:UAM.Desktop.ViewModels"
+             x:Class="UAM.Desktop.Views.Pages.ProfilesView"
+             x:DataType="vm:ProfilesViewModel"
+             x:CompileBindings="False">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24" Spacing="12">
+
+            <WrapPanel>
+                <Button Content="Refresh" Command="{Binding RefreshCommand}" Margin="0,0,8,0" />
+                <Button Content="Edit profile" Command="{Binding BeginEditCommand}"
+                        IsEnabled="{Binding CanBeginEdit}" Margin="0,0,8,0" />
+                <Button Content="Optimization" Command="{Binding ViewOptimizationCommand}" />
+            </WrapPanel>
+
+            <Border Classes="card" IsVisible="{Binding IsEmpty}">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="No approved profiles" FontWeight="SemiBold" />
+                    <TextBlock Classes="muted" TextWrapping="Wrap"
+                               Text="A profile appears here only after a recommendation is explicitly approved on the Optimization page." />
+                </StackPanel>
+            </Border>
+
+            <Grid ColumnDefinitions="300,*" ColumnSpacing="14">
+                <Border Grid.Column="0" Classes="card" Padding="6">
+                    <ListBox ItemsSource="{Binding Profiles}"
+                             SelectedItem="{Binding SelectedProfile, Mode=TwoWay}"
+                             MinHeight="200">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Spacing="2" Margin="2,4">
+                                    <TextBlock Text="{Binding GameId}" FontWeight="SemiBold" />
+                                    <TextBlock Classes="muted" FontSize="11" Text="{Binding ApprovedText}" />
+                                    <TextBlock FontSize="11" Text="{Binding OriginText}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Border>
+
+                <Border Grid.Column="1" Classes="card">
+                    <StackPanel Spacing="8" IsVisible="{Binding HasSelection}">
+
+                        <StackPanel IsVisible="{Binding !IsEditing}" Spacing="8">
+                            <TextBlock Text="{Binding SelectedProfile.GameId}" FontSize="18" FontWeight="SemiBold" />
+                            <Grid ColumnDefinitions="180,*">
+                                <TextBlock Classes="muted" Text="Approved by" />
+                                <TextBlock Grid.Column="1" Text="{Binding SelectedProfile.ApprovedBy}" />
+                                <TextBlock Grid.Row="1" Classes="muted" Text="Approved at" />
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedProfile.ApprovedText}" />
+                                <TextBlock Grid.Row="2" Classes="muted" Text="DPI" />
+                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedProfile.DpiText}" />
+                                <TextBlock Grid.Row="3" Classes="muted" Text="In-game sensitivity" />
+                                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedProfile.InGameSensitivityText}" />
+                            </Grid>
+
+                            <TextBlock Classes="section" Text="Directional gains" />
+                            <ItemsControl ItemsSource="{Binding SelectedProfile.DirectionalGains}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="160,90,*" Margin="0,2">
+                                            <TextBlock Text="{Binding Label}" />
+                                            <TextBlock Grid.Column="1" Text="{Binding GainText}" />
+                                            <TextBlock Grid.Column="2" Classes="muted" Text="{Binding DeltaText}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <TextBlock Classes="section" Text="Speed gains" />
+                            <ItemsControl ItemsSource="{Binding SelectedProfile.SpeedGains}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="160,90,*" Margin="0,2">
+                                            <TextBlock Text="{Binding Label}" />
+                                            <TextBlock Grid.Column="1" Text="{Binding GainText}" />
+                                            <TextBlock Grid.Column="2" Classes="muted" Text="{Binding DeltaText}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+
+                        <StackPanel IsVisible="{Binding IsEditing}" Spacing="8">
+                            <TextBlock Text="Edit approved profile" FontSize="18" FontWeight="SemiBold" />
+                            <TextBlock Classes="muted" TextWrapping="Wrap"
+                                       Text="Saving creates a new manually-edited version. Pending recommendations are never reachable from this page." />
+
+                            <Grid ColumnDefinitions="180,180">
+                                <StackPanel>
+                                    <TextBlock Classes="muted" Text="DPI" />
+                                    <TextBox Text="{Binding EditDpi, Mode=TwoWay}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Classes="muted" Text="In-game sensitivity" />
+                                    <TextBox Text="{Binding EditInGameSensitivity, Mode=TwoWay}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <TextBlock Classes="section" Text="Directional gains" />
+                            <ItemsControl ItemsSource="{Binding EditDirectionalGains}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="160,*" Margin="0,2">
+                                            <TextBlock Text="{Binding Label}" />
+                                            <TextBox Grid.Column="1" Text="{Binding Gain, Mode=TwoWay}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <TextBlock Classes="section" Text="Speed gains" />
+                            <ItemsControl ItemsSource="{Binding EditSpeedGains}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="160,*" Margin="0,2">
+                                            <TextBlock Text="{Binding Label}" />
+                                            <TextBox Grid.Column="1" Text="{Binding Gain, Mode=TwoWay}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button Content="Save edits" Command="{Binding SaveEditCommand}"
+                                        IsEnabled="{Binding CanSaveEdit}" />
+                                <Button Content="Discard" Command="{Binding DiscardEditCommand}" />
+                            </StackPanel>
+                            <TextBlock Classes="muted" IsVisible="{Binding !EditorIsValid}"
+                                       Text="Every gain must be positive; DPI and sensitivity cannot be negative." />
+                        </StackPanel>
+
+                        <TextBlock Classes="section" Text="Export" />
+                        <Grid ColumnDefinitions="*,120">
+                            <TextBox Text="{Binding ExportPath, Mode=TwoWay}" />
+                            <Button Grid.Column="1" Content="Export JSON" Margin="8,0,0,0"
+                                    Command="{Binding ExportCommand}" IsEnabled="{Binding CanExport}" />
+                        </Grid>
+
+                        <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"
+                                   Foreground="#067647" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <TextBlock Text="{Binding ErrorMessage}" Classes="error"
+                       IsVisible="{Binding HasError}" TextWrapping="Wrap" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

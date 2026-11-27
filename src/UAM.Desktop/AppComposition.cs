@@ -9,7 +9,7 @@ namespace UAM.Desktop;
 /// </summary>
 internal static class AppComposition
 {
-    public static MainViewModel CreateMainViewModel(UamApplicationOptions? options = null)
+    public static DesktopComposition Create(UamApplicationOptions? options = null)
     {
         options ??= new UamApplicationOptions();
 
@@ -23,16 +23,44 @@ internal static class AppComposition
             analysisService,
             options);
         var profileService = new ProfileService(storeFactory, options);
+        var importService = new ImportService(storeFactory);
+        var healthService = new ProviderHealthService(storeFactory);
+        var labService = new LabSessionService(importService);
 
-        return new MainViewModel(
+        var watcher = options.WatchImports
+            ? new WatchedFolderImportService(importService, options.ImportFolderPath)
+            : null;
+
+        var main = new MainViewModel(
         [
             new DashboardViewModel(dashboardService),
             new AnalysisViewModel(analysisService),
             new OptimizationViewModel(optimizationService, analysisService),
             new ProfilesViewModel(profileService),
             new HistoryViewModel(historyService),
-            new IntegrationsViewModel(),
+            new IntegrationsViewModel(labService, healthService),
             new SettingsViewModel(options, dashboardService)
         ]);
+
+        return new DesktopComposition(main, watcher);
+    }
+
+    public static MainViewModel CreateMainViewModel(
+        UamApplicationOptions? options = null)
+    {
+        return Create(options).Main;
+    }
+}
+
+internal sealed record DesktopComposition(
+    MainViewModel Main,
+    WatchedFolderImportService? Watcher) : IAsyncDisposable
+{
+    public async ValueTask DisposeAsync()
+    {
+        if (Watcher is not null)
+        {
+            await Watcher.DisposeAsync();
+        }
     }
 }

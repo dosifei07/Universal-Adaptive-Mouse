@@ -1,0 +1,131 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:UAM.Desktop.ViewModels"
+             x:Class="UAM.Desktop.Views.Pages.DashboardView"
+             x:DataType="vm:DashboardViewModel"
+             x:CompileBindings="False">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24" Spacing="12">
+
+            <WrapPanel>
+                <Button Content="Refresh" Command="{Binding RefreshCommand}" Margin="0,0,8,0" />
+                <Button Content="View analysis" Command="{Binding ViewAnalysisCommand}"
+                        IsEnabled="{Binding HasData}" />
+            </WrapPanel>
+
+            <Border Classes="card" IsVisible="{Binding IsEmpty}">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="No training data yet" FontWeight="SemiBold" />
+                    <TextBlock Classes="muted" TextWrapping="Wrap"
+                               Text="Import a canonical training document or complete a UAM Lab session. This page shows only measurements that are actually stored." />
+                </StackPanel>
+            </Border>
+
+            <WrapPanel>
+                <Border Classes="card" Width="170" Margin="0,0,10,10">
+                    <StackPanel>
+                        <TextBlock Classes="muted" Text="Sessions" />
+                        <TextBlock Classes="metric" Text="{Binding SessionCountText}" />
+                    </StackPanel>
+                </Border>
+                <Border Classes="card" Width="170" Margin="0,0,10,10">
+                    <StackPanel>
+                        <TextBlock Classes="muted" Text="Observations" />
+                        <TextBlock Classes="metric" Text="{Binding ObservationCountText}" />
+                    </StackPanel>
+                </Border>
+                <Border Classes="card" Width="170" Margin="0,0,10,10">
+                    <StackPanel>
+                        <TextBlock Classes="muted" Text="Games" />
+                        <TextBlock Classes="metric" Text="{Binding GameCountText}" />
+                    </StackPanel>
+                </Border>
+                <Border Classes="card" Width="170" Margin="0,0,10,10">
+                    <StackPanel>
+                        <TextBlock Classes="muted" Text="Approved profiles" />
+                        <TextBlock Classes="metric" Text="{Binding ProfileCountText}" />
+                    </StackPanel>
+                </Border>
+                <Border Classes="card" Width="170" Margin="0,0,10,10">
+                    <StackPanel>
+                        <TextBlock Classes="muted" Text="Pending review" />
+                        <TextBlock Classes="metric" Text="{Binding PendingApprovalCountText}" />
+                    </StackPanel>
+                </Border>
+            </WrapPanel>
+
+            <TextBlock Classes="muted" Text="{Binding LastObservationText, StringFormat='Last observation: {0}'}" />
+
+            <TextBlock Classes="section" Text="Directional bias" />
+            <TextBlock Classes="muted" TextWrapping="Wrap"
+                       Text="Eight sectors, counter-clockwise from screen right. Positive error means overshoot." />
+
+            <ItemsControl ItemsSource="{Binding Heatmap}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Width="142" Height="132" Margin="0,0,9,9"
+                                CornerRadius="10"
+                                BorderBrush="#D7DBE2" BorderThickness="1"
+                                Padding="10"
+                                Background="{Binding Converter={StaticResource EstimateBrush}}"
+                                ToolTip.Tip="{Binding ToolTip}">
+                            <StackPanel Spacing="1">
+                                <TextBlock Text="{Binding Arrow}" FontSize="24" />
+                                <TextBlock Text="{Binding Direction}" FontWeight="SemiBold" FontSize="12" />
+                                <TextBlock Text="{Binding BiasText}" FontSize="12" />
+                                <TextBlock Classes="muted" FontSize="11"
+                                           Text="{Binding ErrorText, StringFormat='Error {0}'}" />
+                                <TextBlock Classes="muted" FontSize="11"
+                                           Text="{Binding ConfidenceText, StringFormat='Conf. {0}'}" />
+                                <TextBlock Classes="muted" FontSize="11" Text="{Binding SampleText}" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock Classes="section" Text="Speed bands" />
+            <ItemsControl ItemsSource="{Binding SpeedBands}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Margin="0,0,0,6" CornerRadius="8" Padding="12"
+                                BorderBrush="#D7DBE2" BorderThickness="1"
+                                Background="{Binding Converter={StaticResource EstimateBrush}}">
+                            <Grid ColumnDefinitions="100,110,120,110,*">
+                                <TextBlock Grid.Column="0" Text="{Binding BandText}" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="1" Text="{Binding BiasText}" />
+                                <TextBlock Grid.Column="2" Text="{Binding ErrorText}" />
+                                <TextBlock Grid.Column="3" Text="{Binding ConfidenceText}" />
+                                <TextBlock Grid.Column="4" Classes="muted" Text="{Binding SampleText}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Border Classes="card" IsVisible="{Binding HasPendingRecommendation}" Margin="0,10,0,0">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Recommendation waiting for review" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding PendingRecommendation.Summary}" />
+                    <TextBlock Classes="muted" TextWrapping="Wrap"
+                               Text="{Binding PendingRecommendation.Reason}" />
+                    <Button Content="Review recommendation"
+                            HorizontalAlignment="Left"
+                            Command="{Binding ReviewRecommendationCommand}" />
+                </StackPanel>
+            </Border>
+
+            <TextBlock Classes="muted" Text="{Binding ActiveProfileText, StringFormat='Active profile: {0}'}" />
+
+            <TextBlock Text="{Binding ErrorMessage}" Classes="error"
+                       IsVisible="{Binding HasError}" TextWrapping="Wrap" />
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

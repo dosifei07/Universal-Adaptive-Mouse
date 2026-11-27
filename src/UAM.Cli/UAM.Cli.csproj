@@ -10,6 +10,7 @@
     <ProjectReference Include="..\UAM.Core\UAM.Core.csproj" />
     <ProjectReference Include="..\UAM.Analytics\UAM.Analytics.csproj" />
     <ProjectReference Include="..\UAM.AdaptiveEngine\UAM.AdaptiveEngine.csproj" />
+    <ProjectReference Include="..\UAM.Application\UAM.Application.csproj" />
     <ProjectReference Include="..\UAM.Data\UAM.Data.csproj" />
   </ItemGroup>
 

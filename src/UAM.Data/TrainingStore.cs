@@ -62,7 +62,34 @@ public sealed class TrainingStore : IAsyncDisposable
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         await _db.Database.EnsureCreatedAsync(cancellationToken);
+
+        // EnsureCreated only creates a brand-new database. An existing UAM
+        // database from an earlier release needs the import table added, so
+        // upgrade-additive SQL keeps old files usable.
+        await _db.Database.ExecuteSqlRawAsync(ImportRecordsUpgradeSql, cancellationToken);
     }
+
+    private const string ImportRecordsUpgradeSql =
+        """
+        CREATE TABLE IF NOT EXISTS "ImportRecords" (
+            "Id" TEXT NOT NULL CONSTRAINT "PK_ImportRecords" PRIMARY KEY,
+            "Provider" TEXT NOT NULL,
+            "SourceSessionId" TEXT NOT NULL,
+            "ContentHash" TEXT NOT NULL,
+            "CaptureMethod" TEXT NOT NULL,
+            "ObservationCount" INTEGER NOT NULL,
+            "FirstImportedAtUtc" TEXT NOT NULL,
+            "LastImportedAtUtc" TEXT NOT NULL,
+            "ImportCount" INTEGER NOT NULL
+        );
+        CREATE UNIQUE INDEX IF NOT EXISTS
+            "IX_ImportRecords_Provider_SourceSessionId_ContentHash"
+            ON "ImportRecords" ("Provider", "SourceSessionId", "ContentHash");
+        CREATE INDEX IF NOT EXISTS "IX_ImportRecords_ContentHash"
+            ON "ImportRecords" ("ContentHash");
+        CREATE INDEX IF NOT EXISTS "IX_ImportRecords_LastImportedAtUtc"
+            ON "ImportRecords" ("LastImportedAtUtc");
+        """;
 
     public async Task<TrainingStoreSaveResult> SaveObservationsAsync(
         IEnumerable<TrainingObservation> observations,
@@ -434,6 +461,129 @@ public sealed class TrainingStore : IAsyncDisposable
         return entity is null ? null : ToDomain(entity);
     }
 
+    public async Task<ImportRecord?> FindImportRecordAsync(
+        string provider,
+        string sourceSessionId,
+        string contentHash,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(provider);
+        ArgumentException.ThrowIfNullOrWhiteSpace(sourceSessionId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(contentHash);
+
+        var entity = await _db.ImportRecords
+            .AsNoTracking()
+            .FirstOrDefaultAsync(
+                x => x.Provider == provider &&
+                     x.SourceSessionId == sourceSessionId &&
+                     x.ContentHash == contentHash,
+                cancellationToken);
+
+        return entity is null ? null : ToDomain(entity);
+    }
+
+    public async Task<ImportRecord?> FindImportRecordByHashAsync(
+        string contentHash,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(contentHash);
+
+        var entity = await _db.ImportRecords
+            .AsNoTracking()
+            .FirstOrDefaultAsync(
+                x => x.ContentHash == contentHash,
+                cancellationToken);
+
+        return entity is null ? null : ToDomain(entity);
+    }
+
+    public async Task<ImportRecord?> FindImportRecordBySessionAsync(
+        string provider,
+        string sourceSessionId,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(provider);
+        ArgumentException.ThrowIfNullOrWhiteSpace(sourceSessionId);
+
+        var entity = await _db.ImportRecords
+            .AsNoTracking()
+            .FirstOrDefaultAsync(
+                x => x.Provider == provider &&
+                     x.SourceSessionId == sourceSessionId,
+                cancellationToken);
+
+        return entity is null ? null : ToDomain(entity);
+    }
+
+    public async Task<ImportRecord> AddImportRecordAsync(
+        ImportRecord record,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(record);
+
+        var entity = new ImportRecordEntity
+        {
+            Id = record.Id,
+            Provider = record.Provider,
+            SourceSessionId = record.SourceSessionId,
+            ContentHash = record.ContentHash,
+            CaptureMethod = record.CaptureMethod,
+            ObservationCount = record.ObservationCount,
+            FirstImportedAtUtc = record.FirstImportedAtUtc,
+            LastImportedAtUtc = record.LastImportedAtUtc,
+            ImportCount = record.ImportCount
+        };
+
+        _db.ImportRecords.Add(entity);
+        await _db.SaveChangesAsync(cancellationToken);
+
+        return ToDomain(entity);
+    }
+
+    /// <summary>
+    /// Records another attempt at content that was already imported. Only the
+    /// attempt metadata changes; no observation is written.
+    /// </summary>
+    public async Task<ImportRecord?> TouchImportRecordAsync(
+        string id,
+        DateTime attemptedAtUtc,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(id);
+
+        var entity = await _db.ImportRecords
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+
+        if (entity is null)
+        {
+            return null;
+        }
+
+        entity.LastImportedAtUtc = attemptedAtUtc;
+        entity.ImportCount += 1;
+
+        await _db.SaveChangesAsync(cancellationToken);
+        return ToDomain(entity);
+    }
+
+    public async Task<IReadOnlyList<ImportRecord>> GetImportRecordsAsync(
+        string? provider = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _db.ImportRecords.AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(provider))
+        {
+            query = query.Where(x => x.Provider == provider);
+        }
+
+        var entities = await query
+            .OrderByDescending(x => x.LastImportedAtUtc)
+            .ToListAsync(cancellationToken);
+
+        return entities.Select(ToDomain).ToList();
+    }
+
     public ValueTask DisposeAsync()
     {
         return _db.DisposeAsync();
@@ -472,6 +622,22 @@ public sealed class TrainingStore : IAsyncDisposable
             ApprovedBy = entity.ApprovedBy,
             ApprovedAtUtc = entity.ApprovedAtUtc,
             IsManuallyEdited = entity.IsManuallyEdited
+        };
+    }
+
+    private static ImportRecord ToDomain(ImportRecordEntity entity)
+    {
+        return new ImportRecord
+        {
+            Id = entity.Id,
+            Provider = entity.Provider,
+            SourceSessionId = entity.SourceSessionId,
+            ContentHash = entity.ContentHash,
+            CaptureMethod = entity.CaptureMethod,
+            ObservationCount = entity.ObservationCount,
+            FirstImportedAtUtc = entity.FirstImportedAtUtc,
+            LastImportedAtUtc = entity.LastImportedAtUtc,
+            ImportCount = entity.ImportCount
         };
     }
 

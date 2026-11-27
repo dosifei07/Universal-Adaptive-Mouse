@@ -1,0 +1,78 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:UAM.Desktop.ViewModels"
+             x:Class="UAM.Desktop.Views.Pages.SettingsView"
+             x:DataType="vm:SettingsViewModel"
+             x:CompileBindings="False">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24" Spacing="12">
+
+            <Button Content="Re-check database" Command="{Binding RefreshCommand}"
+                    HorizontalAlignment="Left" />
+
+            <Border Classes="card">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Identity" FontWeight="SemiBold" />
+                    <Grid ColumnDefinitions="200,*">
+                        <TextBlock Classes="muted" Text="Player id" />
+                        <TextBlock Grid.Column="1" Text="{Binding PlayerId}" />
+                        <TextBlock Grid.Row="1" Classes="muted" Text="Approved by" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding ApprovedBy}" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <Border Classes="card">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Local database" FontWeight="SemiBold" />
+                    <Grid ColumnDefinitions="200,*">
+                        <TextBlock Classes="muted" Text="Path" />
+                        <TextBlock Grid.Column="1" Text="{Binding DatabasePath}" TextWrapping="Wrap" />
+                        <TextBlock Grid.Row="1" Classes="muted" Text="Status" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding DatabaseStatus}"
+                                   FontWeight="SemiBold" />
+                    </Grid>
+                    <TextBlock Classes="muted" TextWrapping="Wrap"
+                               Text="Counts below come from the database. They are not cached or synthesized." />
+                </StackPanel>
+            </Border>
+
+            <WrapPanel>
+                <Border Classes="card" Width="170" Margin="0,0,10,10">
+                    <StackPanel>
+                        <TextBlock Classes="muted" Text="Sessions" />
+                        <TextBlock Classes="metric" Text="{Binding SessionCountText}" />
+                    </StackPanel>
+                </Border>
+                <Border Classes="card" Width="170" Margin="0,0,10,10">
+                    <StackPanel>
+                        <TextBlock Classes="muted" Text="Observations" />
+                        <TextBlock Classes="metric" Text="{Binding ObservationCountText}" />
+                    </StackPanel>
+                </Border>
+                <Border Classes="card" Width="170" Margin="0,0,10,10">
+                    <StackPanel>
+                        <TextBlock Classes="muted" Text="Games" />
+                        <TextBlock Classes="metric" Text="{Binding GameCountText}" />
+                    </StackPanel>
+                </Border>
+                <Border Classes="card" Width="170" Margin="0,0,10,10">
+                    <StackPanel>
+                        <TextBlock Classes="muted" Text="Profiles" />
+                        <TextBlock Classes="metric" Text="{Binding ProfileCountText}" />
+                    </StackPanel>
+                </Border>
+                <Border Classes="card" Width="170" Margin="0,0,10,10">
+                    <StackPanel>
+                        <TextBlock Classes="muted" Text="Pending review" />
+                        <TextBlock Classes="metric" Text="{Binding PendingApprovalCountText}" />
+                    </StackPanel>
+                </Border>
+            </WrapPanel>
+
+            <TextBlock Text="{Binding ErrorMessage}" Classes="error"
+                       IsVisible="{Binding HasError}" TextWrapping="Wrap" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

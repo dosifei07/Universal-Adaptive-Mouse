@@ -3,16 +3,80 @@
         xmlns:vm="using:UAM.Desktop.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="720"
         x:Class="UAM.Desktop.Views.MainWindow"
         x:DataType="vm:MainViewModel"
+        x:CompileBindings="False"
         Icon="/Assets/avalonia-logo.ico"
+        Width="1180" Height="780" MinWidth="900" MinHeight="600"
         Title="Universal Adaptive Mouse">
 
-    <!-- Placeholder shell. The sidebar and page views arrive in v0.2 batch B;
-         until then this shows which page the view model has navigated to. -->
-    <TextBlock Text="{Binding CurrentTitle}"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Center" />
+    <Grid ColumnDefinitions="250,*" Background="#FBFBFC">
+        <!-- Sidebar -->
+        <Border Grid.Column="0"
+                Background="#FFFFFF"
+                BorderBrush="#E2E5EA"
+                BorderThickness="0,0,1,0">
+            <DockPanel Margin="12">
+                <StackPanel DockPanel.Dock="Top" Margin="8,12,8,18">
+                    <TextBlock Text="Universal Adaptive Mouse"
+                               FontSize="17"
+                               FontWeight="Bold"
+                               TextWrapping="Wrap" />
+                    <TextBlock Text="Local, evidence-first aim analysis"
+                               Classes="muted"
+                               FontSize="11"
+                               Margin="0,4,0,0"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+
+                <TextBlock DockPanel.Dock="Bottom"
+                           Classes="muted"
+                           FontSize="11"
+                           TextWrapping="Wrap"
+                           Margin="8,12,8,4"
+                           Text="No mouse input is intercepted. Recommendations require explicit approval." />
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding NavigationItems}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:NavigationItemViewModel">
+                                <Button Classes="nav"
+                                        Classes.selected="{Binding IsSelected}"
+                                        Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                        CommandParameter="{Binding Key}">
+                                    <StackPanel>
+                                        <TextBlock Classes="navTitle" Text="{Binding Title}" />
+                                        <TextBlock Classes="navDesc" Text="{Binding Description}" />
+                                    </StackPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+
+        <!-- Main content -->
+        <DockPanel Grid.Column="1">
+            <Border DockPanel.Dock="Top"
+                    Padding="24,18"
+                    Background="#FFFFFF"
+                    BorderBrush="#E2E5EA"
+                    BorderThickness="0,0,0,1">
+                <StackPanel Spacing="2">
+                    <TextBlock Text="{Binding CurrentTitle}" Classes="pageTitle" />
+                    <TextBlock Text="{Binding CurrentDescription}" Classes="muted" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding ErrorMessage}"
+                               Classes="error"
+                               TextWrapping="Wrap"
+                               IsVisible="{Binding HasError}"
+                               Margin="0,4,0,0" />
+                </StackPanel>
+            </Border>
+
+            <ContentControl Content="{Binding CurrentPage}" />
+        </DockPanel>
+    </Grid>
 
 </Window>

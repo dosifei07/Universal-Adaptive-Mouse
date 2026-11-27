@@ -21,6 +21,9 @@ public sealed class UamDbContext : DbContext
     public DbSet<ApprovedProfileEntity> ApprovedProfiles =>
         Set<ApprovedProfileEntity>();
 
+    public DbSet<ImportRecordEntity> ImportRecords =>
+        Set<ImportRecordEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         var session = modelBuilder.Entity<TrainingSessionEntity>();
@@ -66,5 +69,24 @@ public sealed class UamDbContext : DbContext
         approvedProfile.Property(x => x.ApprovedBy).HasMaxLength(200);
         approvedProfile.HasIndex(x => x.GameId);
         approvedProfile.HasIndex(x => x.ApprovedAtUtc);
+
+        var importRecord = modelBuilder.Entity<ImportRecordEntity>();
+        importRecord.ToTable("ImportRecords");
+        importRecord.HasKey(x => x.Id);
+        importRecord.Property(x => x.Id).HasMaxLength(64);
+        importRecord.Property(x => x.Provider).HasMaxLength(200);
+        importRecord.Property(x => x.SourceSessionId).HasMaxLength(200);
+        importRecord.Property(x => x.ContentHash).HasMaxLength(64);
+        importRecord.Property(x => x.CaptureMethod).HasMaxLength(100);
+        importRecord
+            .HasIndex(x => new
+            {
+                x.Provider,
+                x.SourceSessionId,
+                x.ContentHash
+            })
+            .IsUnique();
+        importRecord.HasIndex(x => x.ContentHash);
+        importRecord.HasIndex(x => x.LastImportedAtUtc);
     }
 }

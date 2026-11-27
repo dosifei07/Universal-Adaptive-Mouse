@@ -1,6 +1,7 @@
 using System.Text.Json;
 using UAM.AdaptiveEngine;
 using UAM.Analytics;
+using UAM.Application;
 using UAM.Core.Models;
 using UAM.Core.Serialization;
 using UAM.Data;
@@ -39,7 +40,8 @@ internal static class CliApplication
 
         // Backwards-compatible shorthand: `UAM.Cli session.json`.
         if (!command.Equals("analyze", StringComparison.OrdinalIgnoreCase) &&
-            !command.Equals("sessions", StringComparison.OrdinalIgnoreCase))
+            !command.Equals("sessions", StringComparison.OrdinalIgnoreCase) &&
+            !command.Equals("import", StringComparison.OrdinalIgnoreCase))
         {
             command = "analyze";
             rest = args;
@@ -47,9 +49,23 @@ internal static class CliApplication
 
         try
         {
-            return command.Equals("analyze", StringComparison.OrdinalIgnoreCase)
-                ? await RunAnalyzeAsync(rest, cancellationToken)
-                : await RunSessionsAsync(rest, cancellationToken);
+            return command.ToLowerInvariant() switch
+            {
+                "analyze" => await RunAnalyzeAsync(rest, cancellationToken),
+                "sessions" => await RunSessionsAsync(rest, cancellationToken),
+                "import" => await RunImportAsync(rest, cancellationToken),
+                _ => 1
+            };
+        }
+        catch (ProviderNotPermittedException exception)
+        {
+            Console.Error.WriteLine($"error: {exception.Message}");
+            return 1;
+        }
+        catch (TrainingDocumentVersionException exception)
+        {
+            Console.Error.WriteLine($"error: {exception.Message}");
+            return 1;
         }
         catch (CliUsageException exception)
         {
@@ -248,6 +264,107 @@ internal static class CliApplication
         return 0;
     }
 
+    private static async Task<int> RunImportAsync(
+        string[] args,
+        CancellationToken cancellationToken)
+    {
+        if (args.Length == 0)
+        {
+            PrintUsage();
+            return 1;
+        }
+
+        string? filePath;
+
+        if (args[0].StartsWith("--", StringComparison.Ordinal))
+        {
+            filePath = null;
+        }
+        else
+        {
+            filePath = args[0];
+            args = args.Skip(1).ToArray();
+        }
+
+        var options = ParseOptions(args, ["help"], ["db", "folder"]);
+
+        if (options.ContainsKey("help"))
+        {
+            PrintUsage();
+            return 0;
+        }
+
+        var databasePath = options.GetValueOrDefault("db")
+            ?? DefaultDatabasePath;
+
+        var applicationOptions = new UamApplicationOptions
+        {
+            DatabasePath = databasePath
+        };
+
+        var importService = new ImportService(
+            new TrainingStoreFactory(applicationOptions.DatabasePath));
+
+        var folder = options.GetValueOrDefault("folder");
+
+        if (folder is not null)
+        {
+            if (filePath is not null)
+            {
+                throw new CliUsageException(
+                    "import accepts either a file or --folder, not both.");
+            }
+
+            await using var watcher = new WatchedFolderImportService(
+                importService,
+                folder);
+
+            var scan = await watcher.ScanOnceAsync(cancellationToken);
+
+            Console.WriteLine();
+            Console.WriteLine($"=== IMPORT SCAN ({Path.GetFullPath(folder)}) ===");
+            Console.WriteLine($"Imported:   {scan.ImportedCount}");
+            Console.WriteLine($"Duplicates: {scan.DuplicateCount}");
+            Console.WriteLine($"Rejected:   {scan.RejectedCount}");
+            Console.WriteLine($"Failed:     {scan.FailedCount}");
+
+            foreach (var message in scan.Messages)
+            {
+                Console.Error.WriteLine($"  - {message}");
+            }
+
+            return scan.FailedCount > 0 ? 1 : 0;
+        }
+
+        if (filePath is null)
+        {
+            throw new CliUsageException(
+                "import requires a training document file or --folder <path>.");
+        }
+
+        if (!File.Exists(filePath))
+        {
+            Console.Error.WriteLine($"error: training document not found: {filePath}");
+            return 1;
+        }
+
+        var result = await importService.ImportFileAsync(
+            filePath,
+            cancellationToken);
+
+        Console.WriteLine();
+        Console.WriteLine("=== IMPORT ===");
+        Console.WriteLine($"Provider:    {result.Document.Provider}");
+        Console.WriteLine($"Session:     {result.Document.SourceSessionId}");
+        Console.WriteLine($"Capture:     {result.Document.CaptureMethod}");
+        Console.WriteLine($"Outcome:     {result.Outcome}");
+        Console.WriteLine($"Stored:      {result.SavedCount}");
+        Console.WriteLine($"Rejected:    {result.RejectedCount}");
+        Console.WriteLine(result.Detail);
+
+        return result.Outcome == ImportOutcome.Rejected ? 1 : 0;
+    }
+
     private static async Task<int> RunSessionsAsync(
         string[] args,
         CancellationToken cancellationToken)
@@ -442,6 +559,8 @@ internal static class CliApplication
 
             Usage:
               UAM.Cli analyze <training-session.json> [options]
+              UAM.Cli import <training-document.json> [--db <path>]
+              UAM.Cli import --folder <path> [--db <path>]
               UAM.Cli sessions [--db <path>]
 
             Analyze options:
@@ -456,10 +575,16 @@ internal static class CliApplication
             Session options:
               --db <path>       SQLite database path (default: uam.db)
 
+            Import options:
+              --db <path>       SQLite database path (default: uam.db)
+              --folder <path>   Import every *.json document in a folder
+
             Examples:
               UAM.Cli analyze samples/training-session.json
               UAM.Cli analyze samples/training-session.json --save
               UAM.Cli analyze data.json --export out/profile.json --approve
+              UAM.Cli import samples/training-document.json
+              UAM.Cli import --folder imports
               UAM.Cli sessions
             """);
     }

@@ -1,0 +1,115 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:UAM.Desktop.ViewModels"
+             x:Class="UAM.Desktop.Views.Pages.IntegrationsView"
+             x:DataType="vm:IntegrationsViewModel"
+             x:CompileBindings="False">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24" Spacing="12">
+
+            <Border Classes="card" Background="#EEF4FF">
+                <TextBlock Text="{Binding Notice}" TextWrapping="Wrap" />
+            </Border>
+
+            <Grid ColumnDefinitions="*,600" ColumnSpacing="14">
+                <StackPanel Grid.Column="0" Spacing="10">
+                    <TextBlock Classes="section" Text="UAM Lab · 2D flick grid" />
+                    <TextBlock Classes="muted" TextWrapping="Wrap"
+                               Text="{Binding Lab.Description}" />
+                    <TextBlock Classes="muted" TextWrapping="Wrap" FontSize="11"
+                               Text="{Binding Lab.Limitation}" />
+
+                    <WrapPanel>
+                        <Button Content="Start session" Command="{Binding Lab.StartCommand}"
+                                IsEnabled="{Binding Lab.CanStart}" Margin="0,0,8,0" />
+                        <Button Content="Save &amp; import" Command="{Binding Lab.CompleteCommand}"
+                                IsEnabled="{Binding Lab.CanComplete}" Margin="0,0,8,0" />
+                        <Button Content="Reset" Command="{Binding Lab.ResetCommand}" />
+                    </WrapPanel>
+
+                    <Grid ColumnDefinitions="130,*">
+                        <TextBlock Classes="muted" Text="Progress" />
+                        <TextBlock Grid.Column="1" Text="{Binding Lab.ProgressText}" />
+                        <TextBlock Grid.Row="1" Classes="muted" Text="Trials" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Lab.TrialCount}" />
+                        <TextBlock Grid.Row="2" Classes="muted" Text="Hit rate" />
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Lab.HitRateText}" />
+                        <TextBlock Grid.Row="3" Classes="muted" Text="Session" />
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Lab.SessionId}" />
+                    </Grid>
+
+                    <TextBlock Text="{Binding Lab.StatusMessage}" Foreground="#067647"
+                               IsVisible="{Binding Lab.HasStatusMessage}" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding Lab.ErrorMessage}" Classes="error"
+                               IsVisible="{Binding Lab.HasError}" TextWrapping="Wrap" />
+                </StackPanel>
+
+                <Border Grid.Column="1" Classes="card" Padding="8">
+                    <Canvas Width="{Binding Lab.SurfaceWidth}"
+                            Height="{Binding Lab.SurfaceHeight}"
+                            Background="#F0F2F6"
+                            PointerPressed="OnLabPointerPressed">
+                        <Ellipse Width="{Binding Lab.CurrentTargetDiameter}"
+                                 Height="{Binding Lab.CurrentTargetDiameter}"
+                                 Fill="#3B82F6"
+                                 Opacity="0.85"
+                                 IsVisible="{Binding Lab.HasCurrentTarget}"
+                                 Canvas.Left="{Binding Lab.CurrentTargetLeft}"
+                                 Canvas.Top="{Binding Lab.CurrentTargetTop}" />
+                        <TextBlock Text="Start a session, then click the blue target."
+                                   Classes="muted"
+                                   IsVisible="{Binding Lab.IsIdle}"
+                                   Canvas.Left="150" Canvas.Top="145" />
+                    </Canvas>
+                </Border>
+            </Grid>
+
+            <TextBlock Classes="section" Text="Provider registry and terms" />
+            <TextBlock Classes="muted" TextWrapping="Wrap"
+                       Text="A source is importable only when its terms position is permitted and working code exists. 'Not permitted' sources never get integration code." />
+
+            <ItemsControl ItemsSource="{Binding Registry}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Classes="card" Margin="0,0,0,8">
+                            <StackPanel Spacing="3">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                                    <TextBlock Grid.Column="1" Text="{Binding HealthText}" FontWeight="SemiBold" />
+                                </Grid>
+                                <TextBlock Classes="muted" FontSize="11" Text="{Binding MaturityText}" />
+                                <TextBlock FontSize="11" Text="{Binding TermsText}" />
+                                <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding Description}" />
+                                <TextBlock Classes="muted" FontSize="11" TextWrapping="Wrap" Text="{Binding TermsNote}" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock Classes="section" Text="Legacy capability list" />
+            <ItemsControl ItemsSource="{Binding Providers}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Classes="card" Margin="0,0,0,8">
+                            <StackPanel Spacing="3">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                                    <TextBlock Grid.Column="1" Text="{Binding StatusText}" />
+                                </Grid>
+                                <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding Description}" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock Classes="muted" TextWrapping="Wrap"
+                       Text="The desktop app also watches the imports folder. Dropping a canonical training document there imports it automatically; re-dropping the same file creates no duplicates." />
+
+            <TextBlock Text="{Binding ErrorMessage}" Classes="error"
+                       IsVisible="{Binding HasError}" TextWrapping="Wrap" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
