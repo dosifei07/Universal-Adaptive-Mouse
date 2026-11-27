@@ -7,16 +7,12 @@
         x:Class="UAM.Desktop.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="UAM.Desktop">
+        Title="Universal Adaptive Mouse">
 
-    <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainViewModel />
-    </Design.DataContext>
-
-    <TextBox Text="{Binding Greeting}"
-             HorizontalAlignment="Center"
-             VerticalAlignment="Center" />
+    <!-- Placeholder shell. The sidebar and page views arrive in v0.2 batch B;
+         until then this shows which page the view model has navigated to. -->
+    <TextBlock Text="{Binding CurrentTitle}"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Center" />
 
 </Window>

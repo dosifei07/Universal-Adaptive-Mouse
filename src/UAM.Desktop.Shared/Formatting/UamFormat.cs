@@ -38,6 +38,18 @@ public static class UamFormat
                 CultureInfo.CurrentCulture);
     }
 
+    public static string Duration(TimeSpan value)
+    {
+        if (value < TimeSpan.Zero)
+        {
+            value = TimeSpan.Zero;
+        }
+
+        return value.TotalHours >= 1
+            ? $"{(int)value.TotalHours}:{value.Minutes:00}:{value.Seconds:00}"
+            : $"{value.Minutes:00}:{value.Seconds:00}";
+    }
+
     public static string Direction(int sector)
     {
         return sector switch

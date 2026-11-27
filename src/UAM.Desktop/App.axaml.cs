@@ -17,10 +17,16 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            var main = AppComposition.CreateMainViewModel();
+
             desktop.MainWindow = new MainWindow
             {
-                DataContext = new MainViewModel(),
+                DataContext = main,
             };
+
+            // NavigateAsync reports failures through the view model, so this
+            // fire-and-forget call cannot fault unobserved.
+            _ = main.InitializeAsync();
         }
 
         base.OnFrameworkInitializationCompleted();

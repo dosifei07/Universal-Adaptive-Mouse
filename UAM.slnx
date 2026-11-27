@@ -7,9 +7,11 @@
     <Project Path="src/UAM.Core/UAM.Core.csproj" />
     <Project Path="src/UAM.Data/UAM.Data.csproj" />
     <Project Path="src/UAM.Desktop.Shared/UAM.Desktop.Shared.csproj" />
+    <Project Path="src/UAM.Desktop.ViewModels/UAM.Desktop.ViewModels.csproj" />
     <Project Path="src/UAM.Desktop/UAM.Desktop.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/UAM.AdaptiveEngine.Tests/UAM.AdaptiveEngine.Tests.csproj" />
+    <Project Path="tests/UAM.Desktop.Tests/UAM.Desktop.Tests.csproj" />
   </Folder>
 </Solution>

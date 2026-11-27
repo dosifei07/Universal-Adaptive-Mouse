@@ -27,5 +27,6 @@
     <ProjectReference Include="..\UAM.Core\UAM.Core.csproj" />
     <ProjectReference Include="..\UAM.Application\UAM.Application.csproj" />
     <ProjectReference Include="..\UAM.Desktop.Shared\UAM.Desktop.Shared.csproj" />
+    <ProjectReference Include="..\UAM.Desktop.ViewModels\UAM.Desktop.ViewModels.csproj" />
   </ItemGroup>
 </Project>

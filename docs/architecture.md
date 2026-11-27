@@ -97,3 +97,26 @@ separate from domain records so database concerns cannot leak into the engine.
   details belong in adapters outside the engine.
 - Confidence should eventually incorporate dispersion and tracking quality, not
   only sample count.
+
+## Desktop presentation layer (v0.2 batch A)
+
+```text
+UAM.Desktop (Avalonia, composition root)
+   ├── UAM.Desktop.ViewModels   no Avalonia, no UAM.Data, no UAM.AdaptiveEngine
+   │      └── UAM.Application   service interfaces
+   └── UAM.Desktop.Shared       MVVM primitives, formatting, navigation catalog
+```
+
+- `MainViewModel` owns the seven pages and routing. Pages request navigation
+  through `NavigationRequested`; they never reference each other. Navigation is
+  refused while the current page has unsaved edits.
+- Page loads go through `PageViewModelBase.LoadLatestAsync`: only the newest
+  request may update a page, and a superseded request's result or failure is
+  discarded.
+- Every displayed number comes from an application service. Before data exists,
+  pages show an empty state rather than placeholder metrics.
+- Approval boundary: loading, generating, selecting and filtering never
+  approve. Approval is two steps (begin, confirm) for one actionable pending
+  recommendation, and the only route is `IOptimizationService.ApproveAsync`,
+  which runs `RecommendationApprover`. `ArchitectureTests` fail the build if the
+  view models gain a reference to the data layer or the approval engine.

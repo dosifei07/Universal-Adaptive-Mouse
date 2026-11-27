@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Presentation logic for the desktop app. This project deliberately has no
+    Avalonia reference so it builds and tests on a headless Linux machine.
+    It talks to the rest of UAM only through UAM.Application service
+    interfaces; it must never reference UAM.Data directly (enforced by a test).
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\UAM.Core\UAM.Core.csproj" />
+    <ProjectReference Include="..\UAM.Application\UAM.Application.csproj" />
+    <ProjectReference Include="..\UAM.Desktop.Shared\UAM.Desktop.Shared.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>
